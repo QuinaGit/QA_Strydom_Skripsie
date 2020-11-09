@@ -1,0 +1,39 @@
+{% extends "attendance/base.html" %}
+{% block content%}
+
+	<div class="row">
+		<div class="col-md-3">
+			<div class="content-section">
+
+				<h1 class="p-1">Attendance</h1>
+
+				<input type="search" class="form-control ds-input py-2" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off" data-docs-version="4.5" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" dir="auto" style="position: relative; vertical-align: top;">
+
+				<!--page navigation buttons-->
+					<p class='text-muted'>
+						<ul class="list-group">
+							<li class="list-group-item list-group-item-light">
+								<a class="nav-item nav-link" href="{% url 'attendance-raw' %}">Raw Logs</a>
+							</li>
+							<li class="list-group-item list-group-item-light">
+								<a class="nav-item nav-link" href="{% url 'attendance-lecture' %}">Logs by lecture</a>
+							</li>
+							<li class="list-group-item list-group-item-light">
+								<a class="nav-item nav-link" href="{% url 'attendance-upload' %}">Upload Attendance</a>
+							</li>
+						</ul>
+					</p>
+	
+			</div>
+		</div>
+		<div class="col-md-9">
+
+
+{% block page_content %}{% endblock page_content %}
+
+
+		</div>
+	</div>
+
+
+{% endblock content %}

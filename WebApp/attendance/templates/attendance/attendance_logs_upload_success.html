@@ -1,0 +1,9 @@
+{% extends "attendance/home.html" %}
+{% block page_content%}
+
+<div class="content border rounded p-sm-3 m-3 bg-light">
+    <h3 class="pb-sm-3">Upload Successfull!</h3>
+    <a class="pb-sm-3" href="{% url 'attendance-upload' %}">Upload another attendance file</a>
+</div>
+
+{% endblock page_content %}

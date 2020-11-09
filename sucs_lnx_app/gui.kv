@@ -1,0 +1,316 @@
+# #:kivy 1.0.9
+WindowManager:
+    LectureLoginWindow:
+    MainWindow:
+    ScanWindow:
+    LogListWindow:
+    ExportDataWindow:
+
+
+<LectureLoginWindow>:
+    name: "login"
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 10
+
+        Label:
+            text:"Lecture Login"
+            size_hint: 1, 0.2
+            font_size: 50 
+
+        BoxLayout:
+            orientation: "vertical"
+            size_hint: 1, 0.8
+            spacing: 10
+            Button:
+                font_size: 50 
+                background_normal: 'images/rfid.png'
+                halign: 'center'
+                on_release:
+                    root.manager.transition.direction = "up"
+                    root.loginBtn()
+
+            Button:
+                size_hint: 1, 0.3
+                font_size: 50 
+                background_normal: ''
+                background_color: .5, .08, 0, 1
+                text: "Log Off"
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.logoffBtn()
+
+
+<MainWindow>:
+    name: "main"
+    lbl_main_user: lbl_main_user
+    lbl_main_time: lbl_main_time
+
+    BoxLayout:
+        orientation: "vertical"
+        padding: 20
+        spacing: 10
+
+        BoxLayout:
+            size_hint: 1, 0.2
+            orientation: "horizontal"
+            Label:
+                id: lbl_main_user
+                size_hint: 0.7, 1
+                text: "Lecturer Name"
+                halign: "left" 
+                valign: "middle"
+                font_size: 40
+                
+            Label:
+                id: lbl_main_time
+                size_hint: 0.3, 1
+                text: "Time"
+                halign: "right" 
+                valign: "middle"
+                font_size: 40
+
+        GridLayout:
+            
+            cols: 2  
+            rows: 2
+            spacing: 10
+
+            Button:
+                text: "Scan Cards"
+                font_size: 40
+                background_normal: ''
+                background_color:  0, .2, 0, 1
+                background_down: 'images/rfid.png'
+                on_release:
+                    root.manager.transition.direction = "left"
+                    root.scanBtn()
+                    
+
+            Button:
+                text: "View Logs"
+                font_size: 40
+                background_normal: ''
+                background_color:  0, 0.6, 0.6, 1
+                on_release:
+                    root.manager.transition.direction = "left"
+                    root.listBtn()
+                    
+            Button:
+                text: "Log Out"
+                font_size: 40
+                background_normal: ''
+                background_color: .5, .08, 0, 1
+                background_down: ''
+                on_release:
+                    root.manager.transition.direction = "down"
+                    root.logoutBtn()
+                              
+            Button:
+                text: "Export Data"
+                font_size: 40
+                background_normal: ''
+                background_color: 0, 0, 0.3, 1
+                on_release:
+                    root.manager.transition.direction = "left"
+                    root.exportBtn()
+                    
+
+
+<ScanWindow>:
+    name: "scan"
+    # stdnum : stdnum
+    lbl_scan_time: lbl_scan_time
+    lbl_scan_count: lbl_scan_count
+    btn_scan_back: btn_scan_back
+    
+    
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 20
+
+        BoxLayout:
+            orientation: "horizontal"
+            size_hint: 1, 0.2
+            Button:
+                id: btn_scan_back
+                size_hint: 0.2, 1
+                background_normal: ''
+                background_color: .5, .08, 0, 1
+                text: "Back"
+                font_size: 40
+                on_release:
+                    root.backButton()
+                    app.root.current = "main"
+                    root.manager.transition.direction = "right"
+
+            Label:
+                id: lbl_scan_count
+                size_hint:0.5, 1
+                text: "Count: "
+                halign: "center"
+                font_size: 40
+
+            Label:
+                id: lbl_scan_time
+                size_hint:0.3, 1
+                text: "Time: "
+                halign: "right"
+                font_size: 40
+        
+        Image:
+            source: 'images/rfid.png'
+            size_hint: 1, 0.8
+
+<LogListLabel@Label>:
+    text: "Test"
+    color: (1, 1, 0.5, 1)
+    padding: 10, 10
+    font_size: 26
+
+<TestLabel@Label>:
+    text: "Test"
+    color: (1, 0, 0, 1)
+
+<LogListWindow>:
+    name: "list"
+    lbl_list_num: lbl_list_num
+    lbl_list_name: lbl_list_name
+    btn_list_back: btn_list_back
+
+    FloatLayout:
+        Button:
+            id: btn_list_back
+            size_hint:0.2, 0.2
+            background_normal: ''
+            pos_hint:{'x':0, 'top':1}
+
+            background_color: .5, .08, 0, 1
+            text: "Back"
+            font_size: 40
+            on_release:
+                root.backButton()
+                app.root.current = "main"
+                root.manager.transition.direction = "right"
+
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        
+        GridLayout:
+            cols: 2
+            padding: 10
+            spacing: 15
+            # size_hint_y: None
+            # size_hint_x: None
+            # #width: dp(80)
+            size_hint: 0.8, 0.2
+            pos_hint: {"x": 0.2}
+
+            LogListLabel:
+                text: "SU number"
+                size_hint: (None, None)
+                size: self.texture_size[0] + 10, self.texture_size[1] + 10
+
+            LogListLabel:
+                text: "Name"
+                size_hint: (None, None)
+                size: self.texture_size[0] + 10, self.texture_size[1] + 10
+
+        ScrollView:
+            size_hint: 0.8, 0.8
+            pos_hint: {"x": 0.2}
+            GridLayout:
+                cols: 2
+                padding: 10
+                spacing: 15
+                size_hint_y: None
+                size_hint_x: None
+                # width: dp(80)
+                height: self.minimum_height
+            
+                LogListLabel:
+                    id: lbl_list_num
+                    text: ""
+                    size_hint: (None, None)
+                    size: self.texture_size[0] + 10, self.texture_size[1] + 10
+
+                LogListLabel:
+                    id: lbl_list_name
+                    text: ""
+                    size_hint: (None, None)
+                    size: self.texture_size[0] + 10, self.texture_size[1] + 10
+
+
+<ExportDataWindow>:
+    name: "export"
+    btn_export_back: btn_export_back
+    lbl_export_message: lbl_export_message
+
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 20
+        Button:
+            id: btn_export_back
+            size_hint:0.2, 0.2
+            background_normal: ''
+            background_color: .5, .08, 0, 1
+            text: "Back"
+            font_size: 40
+            on_release:
+                root.backButton()
+                app.root.current = "main"
+                root.manager.transition.direction = "right"
+        
+        BoxLayout:
+            orientation: "horizontal"
+            spacing: 10
+            padding: 20
+            Button:
+                size_hint:0.5, 0.8
+                text: "Export Data"
+                font_size: 40
+                background_normal: ''
+                background_color: 0, 0, 0.3, 1
+                on_release:
+                    root.exportButton()
+                    # maby add a popup or something
+            Button:
+                size_hint:0.5, 0.8
+                text: "Safely Remove \nStorage Devices"
+                font_size: 34
+                background_normal: ''
+                background_color: 0, 0, 0.3, 1
+                on_release:
+                    root.unmoutButton()
+                    # maby add a popup or something
+    FloatLayout:
+        Label:
+            id: lbl_export_message
+            size_hint: 0.8, 0.2
+            pos_hint: {'x':0.2, 'y':0.8}
+            text:''
+            font_size: 30
+
+# <P>:
+#     lbl_p_message: lbl_p_message
+#     Label:
+#         id: lbl_p_message
+#         size_hint: 0.6, 0.2
+#         text: "You will export the data to a USB device"
+#         font_size: 25
+#         pos_hint: {"x":0.2, "top":1}
+
+        
+#     Button:
+#         size_hint: 0.8, 0.2
+#         text: "Go Back"
+#         font_size: 35
+#         pos_hint: {"x":0.1, "y":0.1}
+
+
+
+

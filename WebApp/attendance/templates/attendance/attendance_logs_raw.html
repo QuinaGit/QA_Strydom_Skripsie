@@ -1,0 +1,53 @@
+{% extends "attendance/home.html" %}
+{% block page_content%}
+
+<div class="" style="height: 85vh;">
+  <h1>Logged In: {{ user.username }}</h1>
+  <!--table heading-->
+  <!--h2>Raw Logs</h2-->
+  <div class="row border" style="background-color: rgba(0, 43, 200, 0.40);">
+    <div class="col-sm font-weight-bold">
+      Name
+    </div>
+    <div class="col-sm font-weight-bold">
+      US number
+    </div>
+    <div class="col-sm font-weight-bold">
+      Time
+    </div>
+    <div class="col-sm font-weight-bold">
+      Date
+    </div>
+    <div class="col-sm font-weight-bold">
+      Session
+    </div>
+  </div>
+
+  <div class="px-2" style="max-height: 75vh; overflow-x: hidden; overflow-y: auto; background-color: rgba(0,0,200,0.1);">
+    <!--table data-->
+    {% for logs in data.logs %}
+    {% if logs.session_id.lecturer == user or user.is_staff == 1 %}
+      <div class="row border-bottom mh-100">
+        <div class="col-sm text-truncate text-uppercase">
+          {{ logs.name }}
+        </div>
+        <div class="col-sm text-truncate">
+          {{ logs.usnumber }}
+        </div>
+        <div class="col-sm text-truncate text-uppercase">
+          {{ logs.date|date:"H:i:s" }}
+        </div>
+        <div class="col-sm text-truncate text-uppercase">
+          {{ logs.date|date:"M d, Y" }}
+        </div>
+        <div class="col-sm text-truncate text-uppercase">
+          {{ logs.session_id.session_id }}
+        </div>	
+      </div>
+    {% endif %}
+    {% endfor %}
+    <p>You are only able to see logs that you uploaded</p>
+  </div>
+</div>
+
+{% endblock page_content %}

@@ -1,0 +1,72 @@
+{% extends "attendance/home.html" %}
+{% block page_content%}
+
+
+<div class="accordion" id="accordionExample">
+<h1>Logged In: {{ user.username }}</h1>
+
+  {% for sesh in data.session %}
+  {% if sesh.lecturer == user or user.is_staff == 1 %} 
+
+  <div class="card">
+    <div class="card-header" id= "{{ sesh.session_id }}" >
+      <h2 class="mb-0">
+        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ sesh.session_id }}" aria-expanded="true" aria-controls="collapse{{ sesh.session_id }}">
+          {{ sesh.session_id }} &nbsp;&nbsp;&nbsp; ( {{ sesh.scan_count }} )
+        </button>
+      </h2>
+    </div>
+
+
+    <div id="collapse{{ sesh.session_id }}" class="collapse" aria-labelledby="{{ sesh.session_id }}" data-parent="#accordionExample">
+      <div class="card-body">
+
+        <!--sub table heading-->
+        <div class="row border" style="background-color: rgba(0, 43, 200, 0.40);">
+          <div class="col-sm font-weight-bold">
+            Name
+          </div>
+          <div class="col-sm font-weight-bold">
+            US Number
+          </div>
+          <div class="col-sm font-weight-bold">
+            Date
+          </div>
+          <div class="col-sm font-weight-bold">
+            Time
+          </div>
+        </div>
+
+
+        <div class="px-2" style="max-height: 70vh; overflow-x: hidden; overflow-y: auto; background-color: rgba(0,0,200,0.1);">
+          <!--table data-->
+          {% for log in data.logs %}
+          {% if log.session_id.id == sesh.id %}
+          <div class="row border-bottom mh-100">
+            <div class="col-sm text-truncate text-uppercase">
+              {{ log.name }}
+            </div>
+            <div class="col-sm text-truncate">
+              {{ log.usnumber }}
+            </div>
+            <div class="col-sm text-truncate text-uppercase">
+              {{ log.date|date:"M d, Y" }}
+            </div>
+            <div class="col-sm text-truncate text-uppercase">
+              {{ log.date|date:"H:i:s" }}
+            </div>
+          </div>
+
+          {% endif %} 
+          {% endfor %}
+        </div>
+      </div>   
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+</div>
+
+
+{% endblock page_content %}
