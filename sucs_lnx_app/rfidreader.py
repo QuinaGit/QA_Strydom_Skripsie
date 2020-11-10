@@ -1,20 +1,18 @@
-#!/usr/bin/env python
+# SUCS_RFID class runs on a seperate thread on a microprocessor. 
+# This class has been written specifically for the Stellenbosch University Card Scanner skripsie 
+
+
 import RPi.GPIO as GPIO
-from mfrc522 import SimpleMFRC522   
 from mfrc522 import MFRC522
 from kivy.clock import Clock
-import threading
-import string
 import multiprocessing as mp
+
+import settings as s
 from sucsdb import Database
 DATABASE_PATH = r"../sucs_pi_db.db"
 
+
 class SUCS_RFID(mp.Process):
-
-    # KEY = #! Confidential
-    # self.BlockAddr =  #! Confidential
-
-
     def __init__(self, active_lecturer=None, key=[0xFF,0xFF,0xFF,0xFF,0xFF,0xFF], block_addrs=[8, 9, 10]):
         super(SUCS_RFID, self).__init__()
         self.active_lecturer = active_lecturer
@@ -57,7 +55,12 @@ class SUCS_RFID(mp.Process):
 
     def rfid_start_scan(self, scan_interval=0.2):
         self.scan_interval = scan_interval
-        self.rfidScanSchedule = Clock.schedule_interval(self._listen_once, self.scan_interval)
+        # self.rfidScanSchedule = schedule.every(self.scan_interval).seconds.do(self._listen_once) #? test if this works
+        if s.APP_STATE == "SCAN":
+            self.rfidScanSchedule = Clock.schedule_interval(self._listen_once_save, self.scan_interval)
+        else:
+            self.rfidScanSchedule = Clock.schedule_interval(self._listen_once, self.scan_interval)
+            
         if not self.is_scanning():
             self.rfidScanSchedule()
 
@@ -90,14 +93,31 @@ class SUCS_RFID(mp.Process):
 #                    RFID internal functions                    #
 #################################################################
 
-### 
+###
 #   _listen_once: Only listen read rfid once
 ###
     def _listen_once(self, *args):
         try:
             id, text = self._read_no_block()
+            # check that the same card is not read twice 
             if not id == self.card_id and not id == None:
-                print(type(self).__name__,"id="+ str(id), "text="+str(text))
+                print(type(self).__name__,"id="+ str(id), "text="+str(text))    #? Debug print
+                self.card_id = id
+                self.card_text = str(text)
+                self.data_flag = True
+                self.scan_counter += 1
+        finally:
+            GPIO.cleanup()
+
+###
+#   _listen_once: Only listen read rfid once
+###
+    def _listen_once_save(self, *args):
+        try:
+            id, text = self._read_no_block()
+            # check that the same card is not read twice 
+            if not id == self.card_id and not id == None:
+                print(type(self).__name__,"id="+ str(id), "text="+str(text))    #? Debug print
                 self.card_id = id
                 self.card_text = str(text)
                 self.data_flag = True
@@ -162,38 +182,28 @@ class SUCS_RFID(mp.Process):
 #                       Debug functions                         #
 #################################################################
         
-    def read_id(self):
-        id = self._read_id_no_block()
-        while (not id) and (self.listen_state):
-            id = self._read_id_no_block()
-        return id
+    # def read_id(self):
+    #     id = self._read_id_no_block()
+    #     while (not id) and (self.listen_state):
+    #         id = self._read_id_no_block()
+    #     return id
 
-    def _read_id_no_block(self):
-        (status, TagType) = self.READER.MFRC522_Request(self.READER.PICC_REQIDL)
-        if status != self.READER.MI_OK:
-            return None
-        (status, uid) = self.READER.MFRC522_Anticoll()
-        if status != self.READER.MI_OK:
-            return None
-        return self.uid_to_num(uid)
+    # def _read_id_no_block(self):
+    #     (status, TagType) = self.READER.MFRC522_Request(self.READER.PICC_REQIDL)
+    #     if status != self.READER.MI_OK:
+    #         return None
+    #     (status, uid) = self.READER.MFRC522_Anticoll()
+    #     if status != self.READER.MI_OK:
+    #         return None
+    #     return self.uid_to_num(uid)
     
-### 
-#   crackkey: function written for crack func in Read.py
-###
-    def crackkey(self, key):
-        self.KEY = key
-        id, text = self._read_no_block()
-        while (not id) and (self.listen_state):
-            id, text = self._read_no_block()
-            #print("id="+ str(id))     
-        return id, text
 
-###?from mfrc522 import SimpleMFRC522    
-#?    def write_tag(self, text):
-#?        try:
-#?                #text = input('New data:')
-#?                print("Now place your tag to write")
-#?                self.READER.write(text)
-#?                print("Written")
-#?        finally:
-#?                GPIO.cleanup()
+    # from mfrc522 import SimpleMFRC522    
+    # def write_tag(self, text):
+    #     try:
+    #         #text = input('New data:')
+    #         print("Now place your tag to write")
+    #         self.READER.write(text)
+    #         print("Written")
+    #     finally:
+    #         GPIO.cleanup()

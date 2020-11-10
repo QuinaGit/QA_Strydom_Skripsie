@@ -230,16 +230,16 @@ WindowManager:
                 size_hint_x: None
                 # width: dp(80)
                 height: self.minimum_height
-            
+
                 LogListLabel:
                     id: lbl_list_num
-                    text: ""
+                    #text: ""
                     size_hint: (None, None)
                     size: self.texture_size[0] + 10, self.texture_size[1] + 10
 
                 LogListLabel:
                     id: lbl_list_name
-                    text: ""
+                    #text: ""
                     size_hint: (None, None)
                     size: self.texture_size[0] + 10, self.texture_size[1] + 10
 
@@ -285,7 +285,7 @@ WindowManager:
                 background_normal: ''
                 background_color: 0, 0, 0.3, 1
                 on_release:
-                    root.unmoutButton()
+                    root.ejectButton()
                     # maby add a popup or something
     FloatLayout:
         Label:
