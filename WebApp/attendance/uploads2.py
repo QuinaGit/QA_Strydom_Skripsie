@@ -53,7 +53,7 @@ def handle_uploaded_file(f):
                 line_count += 1
                 fields = row.split(',') #? or ';' ??
 
-                # attendance device info
+                #! attendance device info
                 if data_mark == 0:
                     
                     # split data into object array 
@@ -85,7 +85,7 @@ def handle_uploaded_file(f):
                     #     check.last_update = format_date
                     #     check.save(update_fields=['software_version','last_update'])
 #####
-                # session table data
+                #! session table data
                 elif data_mark == 1:
                     
                     # split data into object array 
@@ -119,7 +119,7 @@ def handle_uploaded_file(f):
                     print("session1=",session1)
 #####
 #                     try:
-#                         user1 = User.objects.get(username=lec_us1) 
+#                         user1 = User.objects.get(username=lec_us1)
 #                     except:
 #                         print("user-",lec_us1,"-not found")
 #                         continue
@@ -130,7 +130,7 @@ def handle_uploaded_file(f):
 #                     if check.first() == None:
 #                         session1.save()
 #####
-                # attendance logs table data
+                #! attendance logs table data
                 elif data_mark == 2:    
                     print("--data_mark",data_mark,": fields:",fields,"---")      #!only for debug
                     # split data into object array  
@@ -194,7 +194,10 @@ def handle_uploaded_file(f):
         session1['lecturer'] = user1
 
         # check if 
-        check = Sessions.objects.filter(start_datetime=session1['start_datetime'],end_datetime=formsession1['end_datetime']at_date2,scan_count=session1['scan_count'],session_id=session1['session_id'])
+        check = Sessions.objects.filter(start_datetime=session1['start_datetime'],
+                                        end_datetime=formsession1['end_datetime']at_date2,
+                                        scan_count=session1['scan_count'],
+                                        session_id=session1['session_id'])
         if check.first() == None:
             session1.save()
 
@@ -208,7 +211,10 @@ def handle_uploaded_file(f):
         
         log1['session_id'] = session
 
-        check = Attendance_Logs.objects.filter(usnumber=log1['usnumber'], date=log1['date'], name=log1['name'], session_id=log1['session_id'])
+        check = Attendance_Logs.objects.filter( usnumber=log1['usnumber'], 
+                                                date=log1['date'], 
+                                                name=log1['name'], 
+                                                session_id=log1['session_id'])
         if check.first() == None:
             log1.save()
 

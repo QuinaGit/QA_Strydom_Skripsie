@@ -1,0 +1,31 @@
+{% extends "attendance/home.html" %}
+{% block page_content%}
+
+<div class="" style="height: 85vh;">
+  <!--table heading-->
+  <h2>Class List</h2>
+  <div class="row border" style="background-color: rgba(0, 43, 200, 0.40);">
+    <div class="col-sm font-weight-bold">
+      Name
+    </div>
+    <div class="col-sm font-weight-bold">
+      US number
+    </div>
+  </div>
+
+  <div class="px-2" style="max-height: 75vh; overflow-x: hidden; overflow-y: auto; background-color: rgba(0,0,200,0.1);">
+    <!--table data-->
+    {% for student in data.combinedlist %}
+      <div class="row border-bottom mh-100">
+        <div class="col-sm text-truncate text-uppercase">
+          {{ student.name }}
+        </div>
+        <div class="col-sm text-truncate">
+          {{ student.usnumber }}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock page_content %}

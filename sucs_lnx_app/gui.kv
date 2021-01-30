@@ -123,8 +123,8 @@ WindowManager:
     # stdnum : stdnum
     lbl_scan_time: lbl_scan_time
     lbl_scan_count: lbl_scan_count
+    lbl_scan_msg: lbl_scan_msg
     btn_scan_back: btn_scan_back
-    
     
     BoxLayout:
         orientation: "vertical"
@@ -159,10 +159,18 @@ WindowManager:
                 text: "Time: "
                 halign: "right"
                 font_size: 40
+
+        Label:
+            id: lbl_scan_msg
+            size_hint:1, 0.2
+            text: "reading"
+            halign: "center"
+            font_size: 35
         
         Image:
             source: 'images/rfid.png'
-            size_hint: 1, 0.8
+            size_hint: 1, 0.60
+            halign: "center"
 
 <LogListLabel@Label>:
     text: "Test"
@@ -203,9 +211,6 @@ WindowManager:
             cols: 2
             padding: 10
             spacing: 15
-            # size_hint_y: None
-            # size_hint_x: None
-            # #width: dp(80)
             size_hint: 0.8, 0.2
             pos_hint: {"x": 0.2}
 
@@ -228,7 +233,6 @@ WindowManager:
                 spacing: 15
                 size_hint_y: None
                 size_hint_x: None
-                # width: dp(80)
                 height: self.minimum_height
 
                 LogListLabel:
@@ -294,23 +298,6 @@ WindowManager:
             pos_hint: {'x':0.2, 'y':0.8}
             text:''
             font_size: 30
-
-# <P>:
-#     lbl_p_message: lbl_p_message
-#     Label:
-#         id: lbl_p_message
-#         size_hint: 0.6, 0.2
-#         text: "You will export the data to a USB device"
-#         font_size: 25
-#         pos_hint: {"x":0.2, "top":1}
-
-        
-#     Button:
-#         size_hint: 0.8, 0.2
-#         text: "Go Back"
-#         font_size: 35
-#         pos_hint: {"x":0.1, "y":0.1}
-
 
 
 

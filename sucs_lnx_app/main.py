@@ -22,7 +22,7 @@ import datetime
 import os
 import sys
 import subprocess
-from time                   import time, sleep
+from time                   import time
 
 from kivy.app               import App
 from kivy.clock             import Clock
@@ -44,7 +44,13 @@ import rfid_auth_key as key
 
 
 #####################################################################
-#                         Kivy GUI classes                          #
+##### # # # # #  #   #    Kivy GUI classes     #   #  # # # # # #####
+#####################################################################
+
+
+
+#####################################################################
+#                     LectureLoginWindow class                      #
 #####################################################################
 
 class LectureLoginWindow(Screen):
@@ -60,20 +66,25 @@ class LectureLoginWindow(Screen):
         s.APP_STATE = "LOGIN" 
 
         # activate rfid scanner
-        if s.RFID_ENABLED: 
-            if not self.sc:
-                self.sc = SUCS_RFID(key=key.RFID_AUTH_KEY, block_addrs=key.RFID_BLOCK_ADDRS)
-            self.sc.start()
-            self.sc.rfid_start_scan(scan_interval=s.RFID_READ_INTERVAL)
+        #? if s.RFID_ENABLED: 
+        #?     if self.sc:
+        #?         print(type(self).__name__,"sc:",self.sc)                  #!Print
+        #?     if not self.sc:
+        #?         self.sc = SUCS_RFID(key=key.RFID_AUTH_KEY, block_addrs=key.RFID_BLOCK_ADDRS)
+        #?         self.sc.start()
+        #?         #self.sc.rfid_start_scan(scan_interval=s.RFID_READ_INTERVAL)
+                
+        #?         if self.sc:
+        #?             print(type(self).__name__,"sc:",self.sc)                  #!Print
 
-        # shedule event: check if a card has been scanned
-        self.checkInfoSchedule = Clock.schedule_interval(self.checkInfo, s.SCAN_CHECK_INTERVAL)
-        if not self.checkInfoSchedule.is_triggered:
-            self.checkInfoSchedule()
+        #? # shedule event: check if a card has been scanned
+        #? self.checkInfoSchedule = Clock.schedule_interval(self.checkInfo, s.SCAN_CHECK_INTERVAL)
+        #? if not self.checkInfoSchedule.is_triggered:
+        #?     self.checkInfoSchedule()
     
     # periodic routine: check if check if a card has been scanned
     def checkInfo(self, *args):
-        info = self.sc.get_usnum_name()  #get (usnum, name) from database
+        info = self.sc.get_lastread_text()  #get (usnum, name) from database
         if not info == None:
             # test if valid lecturer
             if db.valid_lecturer(info[0]):
@@ -87,12 +98,12 @@ class LectureLoginWindow(Screen):
     # login button is pressed or valid Lecturer card is scanned
     def loginBtn(self):
         if s.LOGIN_BYPASS:
-            Clock.unschedule(self.checkInfo)
+            #? Clock.unschedule(self.checkInfo)
             s.ACTIVE_LECTURER = s.MANUAL_LECTURER
 
-        # save data and go to main screen
-        sm.current = "main"
-        self.resetLogin()
+            # save data and go to main screen
+            sm.current = "main"
+            #? self.resetLogin()
 
     # popup: create new lecturer
     def popup_new_lecture(self):
@@ -122,23 +133,29 @@ class LectureLoginWindow(Screen):
 
     # popup button method
     def createNewLecrurer(self, *args):
-        if db.insert_lecturers(self.lecturer_info[0],self.lecturer_info[1]) < 0:
-            print(type(self).__name__,"Failed to create new lecturer")
+        if db.insert_lecturer(s.ACTIVE_LECTURER) < 0:
+            print(type(self).__name__,"Failed to create new lecturer")                  #!Print
         else:
-            print(type(self).__name__,"Successfully created lecturer:",self.lecturer_info)
+            print(type(self).__name__,"Successfully created lecturer:",s.ACTIVE_LECTURER)            #!Print
         self.popupWindow.dismiss()
 
     # log off application
     def logoffBtn(self):
         s.APP_STATE = "OFF"
-        self.resetLogin()
+        #? self.resetLogin()
         SUCSterminate()
 
     # reset class data
     def resetLogin(self):
         self.sc.rfid_stop_scan()
+        print(type(self).__name__,"+++++Stop Scan")                     #!remove
+        self.sc.close()
         self.sc = None
 
+
+#####################################################################
+#                         MainWindow class                          #
+#####################################################################
 
 class MainWindow(Screen):
     """ main window class
@@ -159,7 +176,7 @@ class MainWindow(Screen):
         s.APP_STATE = "MAIN"
         self.update_count = -1
         self.update_window()
-        self.lbl_main_user.text = "Loged In: "+ str(s.ACTIVE_LECTURER[1])
+        self.lbl_main_user.text = "Loged In: "+ str(s.ACTIVE_LECTURER)
 
         
         # shedule event: check if a card has been scanned
@@ -187,6 +204,10 @@ class MainWindow(Screen):
     def update_window(self, *args):
         self.lbl_main_time.text = str(get_time())
 
+#####################################################################
+#                         ScanWindow class                          #
+#####################################################################
+
 
 class ScanWindow(Screen):
     """ main window class
@@ -198,6 +219,7 @@ class ScanWindow(Screen):
     # widget variables for gui.kv 
     lbl_scan_count  = ObjectProperty(None)
     lbl_scan_time   = ObjectProperty(None)
+    lbl_scan_msg    = ObjectProperty(None)
     btn_scan_back   = ObjectProperty(None)
 
     sc              = None     # SUCS_RFID onject
@@ -208,6 +230,9 @@ class ScanWindow(Screen):
         s.SESSION_ID = make_datetime_stamp()
         # save log session info
         self.session_start_time = get_datetime()
+        # reset scan counter
+        self.scan_counter = 0
+        self.feedback = True
 
         # activate rfid reader in another thread
         if s.RFID_ENABLED:
@@ -232,11 +257,20 @@ class ScanWindow(Screen):
 
     # built-in kivy function: before leaving the scan window
     def on_pre_leave(self, *args):
-        db.insert_session(self.session_start_time, get_datetime(), self.sc.scan_counter)
+        db.insert_session(s.SESSION_ID, s.ACTIVE_LECTURER, self.session_start_time, get_datetime())
         self.resetScan()
 
     # stop rfid scanning and clear thread object
     def resetScan(self):
+        self.scan_counter = 0
+        self.lbl_scan_count.text = str(self.scan_counter)
+        self.lbl_scan_msg.text = ""
+        self.feedback = False
+        s.SCAN_ID     = None
+        s.SCAN_TEXT   = None
+        s.SCAN_SAVED  = 0
+        s.SCAN_READ   = 0
+
         self.sc.rfid_stop_scan()
         self.sc = None
         Clock.unschedule(self.cntUpdateSchedule)
@@ -244,39 +278,6 @@ class ScanWindow(Screen):
 
     # return to main window
     def backButton(self):
-        
-        db.insert_student_logs(20123456,"P Pienaar")            #! Remove
-        sleep(1)
-        db.insert_student_logs(20123457,"P Zietsman")           #! Remove
-        sleep(1)
-        db.insert_student_logs(20123458,"A Strydom")            #! Remove
-        sleep(1)
-        db.insert_student_logs(20123459,"Z Bierman")            #! Remove
-        sleep(1)
-        db.insert_student_logs(20123460,"M Jansen")             #! Remove
-        sleep(1)
-        db.insert_student_logs(20123461,"D Swart")              #! Remove
-        sleep(1)
-        db.insert_student_logs(20123462,"F Dippenaar")          #! Remove
-        sleep(1)
-        db.insert_student_logs(20123463,"G Janse van Vuuren")   #! Remove
-        sleep(1)
-        db.insert_student_logs(20123464,"H van Staaden")        #! Remove
-        sleep(1)
-        db.insert_student_logs(20123465,"M Marias")             #! Remove
-        sleep(1)
-        db.insert_student_logs(20123466,"J Marais")             #! Remove
-        sleep(1)
-        db.insert_student_logs(20123467,"F Du Preez")           #! Remove
-        sleep(1)
-        db.insert_student_logs(20123468,"E Musk")               #! Remove
-        sleep(1)
-        db.insert_student_logs(20123469,"M Zuckerburg")         #! Remove
-        sleep(1)
-        db.insert_student_logs(20123470,"D Trump")              #! Remove
-        sleep(1)
-        db.insert_student_logs(20123471,"G Small")              #! Remove
-
 
         sm.current = "main"
 
@@ -286,7 +287,40 @@ class ScanWindow(Screen):
 
     # periodic routine: update count
     def update_window_cnt(self, *args):
-        self.lbl_scan_count.text = str(self.sc.scan_counter)   #todo: get this from the rfidreader.py
+
+        # if self.feedback == True:
+        #     #self.lbl_scan_count.text = str(self.scan_counter)
+        #     self.feedback = False
+
+        if (s.SCAN_READ > s.SCAN_SAVED) and (not s.SCAN_ID == None):
+            if s.SCAN_READ == s.SCAN_SAVED +1: 
+                if not db.scanned_since(s.SCAN_TEXT, s.SESSION_ID):
+                    print(type(self).__name__,"Looking for:",s.SCAN_TEXT, self.session_start_time, s.ACTIVE_LECTURER)
+                    # save log
+                    db.insert_log(s.SESSION_ID, get_datetime(), s.SCAN_TEXT)
+                    # update window counter
+                    self.scan_counter += 1
+                    self.lbl_scan_count.text = str(self.scan_counter)
+                    self.lbl_scan_msg.text = str(s.SCAN_TEXT)
+                else:
+                    self.lbl_scan_msg.text = str(s.SCAN_TEXT) + " already logged!"
+
+                s.SCAN_SAVED += 1
+                if s.SCAN_SAVED > 500:
+                    s.SCAN_SAVED = 0
+                    s.SCAN_READ = 0
+            else:
+                # error
+                print(type(self).__name__,"Error: Last", s.SCAN_READ - s.SCAN_SAVED, "scans was not saved")
+                self.lbl_scan_msg.text = "Tap again! Log nog saved"
+                self.feedback = True
+                s.SCAN_READ = s.SCAN_SAVED
+                #todo: make this a popup
+
+
+#####################################################################
+#                       LogListWindow class                         #
+#####################################################################
 
 class LogListWindow(Screen):
     """ list window class
@@ -299,18 +333,19 @@ class LogListWindow(Screen):
     lbl_list_name = ObjectProperty(None)
     btn_list_back = ObjectProperty(None)
 
-    # built-in kivy function: before entering the scan window 
+    # built-in kivy function: before entering the log list window 
     def on_pre_enter(self, *args):
         s.APP_STATE = "LIST"
         self.lbl_list_num.text = ""
         self.lbl_list_name.text =""
-        loglist = db.get_student_nums_names()
+        # loglist = db.get_student_nums_names()
+        loglist = db.get_50_logs_nums_times(s.ACTIVE_LECTURER)
         if not loglist == None:
             i=0
             for item in loglist:
                 if i > 40:
                     break
-                print(type(self).__name__,item)
+                # print(type(self).__name__,item)
                 self.lbl_list_num.text += str(item[0]) + "\n"
                 self.lbl_list_name.text += str(item[1]) + "\n"
                 i +=1
@@ -322,18 +357,22 @@ class LogListWindow(Screen):
 #####################################################################
 #                        Settings variables                         #
 #####################################################################
-DIR_DEV     = '/dev/'
+DIR_DEV     = '/dev/'       #?
 DIR_MEDIA   = '/media/pi/'
-DIR_DEV_SD = '/dev/sd??'
+DIR_DEV_SD = '/dev/sd??'    #?
 # DIR_DEV_SDA = '/dev/sd'
 CMD_LS      = 'ls '
-CMD_TOUCH   = 'touch '
+CMD_TOUCH   = 'touch '      #?
 CMD_ECHO    = 'echo '
-CMD_UMOUNT  = 'umount '
+CMD_UMOUNT  = 'umount '     #?
 CMD_DF_SD   = 'df | grep /dev/sd'
 CMD_EJECT   = 'eject -v '
 CMD_EJECT_A = 'eject -v /dev/sd??'
 
+
+#####################################################################
+#                     ExportDataWindow class                        #
+#####################################################################
 
 class ExportDataWindow(Screen):
     """ export window class
@@ -363,13 +402,14 @@ class ExportDataWindow(Screen):
     # button method safely removes all connected USB devices
     def ejectButton(self):
         if self.check_sd_mounted():
-            output = os.popen(CMD_EJECT_A).read()  # ls /media/pi/
+            output = os.popen(CMD_EJECT_A).read()  # eject -v /dev/sd??
             print(type(self).__name__,"Output:",output)
             if output == "":
                 self.lbl_export_message.text = "Storage device safely removed" 
         else:
             self.lbl_export_message.text = "No device to remove"
 
+    # return the list of media devices mounted in the /media/pi/ directory
     def get_media_dev_list(self):
         output = os.popen(CMD_LS+DIR_MEDIA).read()  # ls /media/pi/
         self.media_pi_devs = output.split('\n')
@@ -457,8 +497,8 @@ class ExportDataWindow(Screen):
 
     # Save data to usb
     def save_to_usb(self):
-        loglist = db.get_student_logs()
-        sessionlist = db.get_session_data()
+        loglist = db.get_logs_data(s.ACTIVE_LECTURER)
+        sessionlist = db.get_sessions_data(s.ACTIVE_LECTURER)
         # print(type(self).__name__,loglist)
 
         # Check if there is data in the database
@@ -483,7 +523,7 @@ class ExportDataWindow(Screen):
  
             # write session data to .csv line by line
             for line in sessionlist:
-                self.EXPORTDATA = str(line[0])+","+str(line[1])+","+str(line[2])+","+str(line[3])+","+str(line[4])+","+str(line[5])     # data = 20123456,2020-08-31 10:13:28,P Pienaar,20200831100212
+                self.EXPORTDATA = str(line[0])+","+str(line[1])+","+str(line[2])+","+str(line[3])    # data = 20200831100212,20123456,2020-08-31 10:13:28,2020-08-31 10:33:28
                 output = os.popen(CMD_ECHO+'"'+self.EXPORTDATA+'" >> "'+DIR_MEDIA+self.DEVICENAME+'/'+self.EXPORTFILENAME+'"')    # echo "data" >> "media/pi/DEVICENAME/ECXPORTFILENAME"
 
             # write a line break     
@@ -491,7 +531,7 @@ class ExportDataWindow(Screen):
                    
             # write logs data to .csv line by line
             for line in loglist:
-                self.EXPORTDATA = str(line[0])+","+str(line[1])+","+str(line[2])+","+str(line[3])
+                self.EXPORTDATA = str(line[0])+","+str(line[1])+","+str(line[2])                 # data = 20200831100212,20123456,2020-08-31 10:13:28
                 output = os.popen(CMD_ECHO+'"'+self.EXPORTDATA+'" >> "'+DIR_MEDIA+self.DEVICENAME+'/'+self.EXPORTFILENAME+'"')    # echo "data" >> "media/pi/DEVICENAME/ECXPORTFILENAME"
                 
             if export_success:
@@ -512,9 +552,8 @@ def invalidLogin():
                   size_hint=(None, None), size=(400, 400))
     pop.open()
 
-
 # #
-# Auxiliry functions
+# Auxiliary functions
 # #
 def get_time():
     #return str(datetime.datetime.now()).split(" ")[1] #fix
@@ -526,13 +565,9 @@ def get_date():
 def get_datetime():
     now = datetime.datetime.now()
     return now.strftime('%Y-%m-%d %H:%M:%S')
-def get_date_stamp():
-    now = datetime.datetime.now()
-    return now.strftime('%Y%m%d')
 def make_datetime_stamp():
     now = datetime.datetime.now()
     return now.strftime('%Y%m%d%H%M%S')
-
 def SUCSterminate():
     #todo: Save data
     db.close_connection()

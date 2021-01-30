@@ -24,7 +24,7 @@ python manage.py runserver
 '12345678'
 
 
-sesh = Sessions(start_datetime='2020-08-31 12:51:11', end_datetime='2020-08-31 13:01:11', scan_count = 3, session_id = 'SESH20200832130112', lecturer=user)
+sesh = Sessions(start_datetime='2020-08-31 12:51:11', end_datetime='2020-08-31 13:01:11', scan_count = 3, session_id = '20200831125000', lecturer=user)
 sesh.save()
 
 >>> log_1 = Attendance_Logs(name='P Pienaar', usnumber='20123456', date='2020-08-31 12:52:11', session_id=sesh)

@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import Attendance_Logs, Sessions, Device
+from .models import Logs, Sessions, Device, ClassList
 
-admin.site.register(Attendance_Logs)
+admin.site.register(Logs)
 admin.site.register(Sessions)
 admin.site.register(Device)
+admin.site.register(ClassList)

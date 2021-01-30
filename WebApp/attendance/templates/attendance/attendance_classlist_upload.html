@@ -1,0 +1,42 @@
+{% extends "attendance/home.html" %}
+{% block page_content%}
+
+<div class="content border rounded p-sm-3 m-3 bg-light">
+    <h3 class="pb-sm-3">Upload Classlist file here</h3>
+
+    {% if messages %}
+    <div>
+        {% for message in messages %}
+        <div{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method ='post' enctype ="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group">
+            {{form.file}}
+        </div>
+        <button class="btn btn-outline-info" type="submit">Upload</button>
+    </form> 
+
+</div>
+<div class="content border rounded p-sm-3 m-3 bg-white">
+  <p>Make sure that the classlist is uploaded as a <mark>.csv</mark> file in the format:</p>
+  <pre class="border border-dark bg-secondary">
+    <code class="text-light">USnumber;Name<kbd>LF</kbd></code>
+    <code class="text-light">USnumber;Name<kbd>LF</kbd></code>
+    <code class="text-light">...;...</code>
+  </pre>
+  <p>Example: (saved as "ClassList.csv")</p>
+  <pre class="border border-dark bg-secondary">
+    <code class="text-light">20123456;MUSK E<kbd>LF</kbd></code>
+    <code class="text-light">20654321;Bezos J<kbd>LF</kbd></code>
+    <code class="text-light">20456789;ZUCKERBERG M</code>
+  </pre>
+</div>
+
+
+{% endblock page_content %}
